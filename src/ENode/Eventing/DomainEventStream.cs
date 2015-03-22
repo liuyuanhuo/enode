@@ -7,6 +7,12 @@ namespace ENode.Eventing
     [Serializable]
     public class DomainEventStream
     {
+        public DomainEventStream(string aggregateRootId, int version, IEnumerable<IDomainEvent> events)
+        {
+            AggregateRootId = aggregateRootId;
+            Version = version;
+            Events = events;
+        }
         public DomainEventStream(string commandId, string aggregateRootId, int aggregateRootTypeCode, int version, DateTime timestamp, IEnumerable<IDomainEvent> events, IDictionary<string, string> items = null)
         {
             CommandId = commandId;

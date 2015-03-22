@@ -18,5 +18,11 @@ namespace ENode.Eventing
             : base(aggregateRoot.Id, ((IAggregateRoot)aggregateRoot).Version + 1)
         {
         }
+        /// <summary>Parameterized constructor.
+        /// </summary>
+        public DomainEvent(TAggregateRootId id, int version)
+            : base(id, version)
+        {
+        }
     }
 }

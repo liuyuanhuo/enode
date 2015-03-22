@@ -70,6 +70,11 @@
     <Compile Include="Configurations\DbTableSetting.cs" />
     <Compile Include="Configurations\ConfigurationSetting.cs" />
     <Compile Include="Domain\AggregateRoot.cs" />
+    <Compile Include="Domain\CompatibleStore\CompatibleStyle.cs" />
+    <Compile Include="Domain\CompatibleStore\ICompatibleStoreHandler.cs" />
+    <Compile Include="Domain\CompatibleStore\Impl\CompatibleAggregateStorage.cs" />
+    <Compile Include="Domain\CompatibleStore\Impl\CompatibleStoreHandlerProvider.cs" />
+    <Compile Include="Domain\CompatibleStore\Impl\CompatibleStoreHandlerWrapper.cs" />
     <Compile Include="Domain\IAggregateRoot.cs" />
     <Compile Include="Domain\IAggregateStorage.cs" />
     <Compile Include="Domain\Impl\EventSourcingAggregateStorage.cs" />
@@ -105,6 +110,7 @@
     <Compile Include="Infrastructure\IMessageDispatcher.cs" />
     <Compile Include="Infrastructure\IMessageHandlerProvider.cs" />
     <Compile Include="Infrastructure\Impl\DefaultMessageDispatcher.cs" />
+    <Compile Include="Infrastructure\Impl\BaseSingleHandlerProvider.cs" />
     <Compile Include="Infrastructure\Impl\DoNothingPublisher.cs" />
     <Compile Include="Infrastructure\IOHelper.cs" />
     <Compile Include="Infrastructure\IMessageHandlerProxy.cs" />
@@ -113,6 +119,7 @@
     <Compile Include="Infrastructure\IMessageProcessContext.cs" />
     <Compile Include="Infrastructure\IMessageProcessor.cs" />
     <Compile Include="Infrastructure\IMessagePublisher.cs" />
+    <Compile Include="Infrastructure\ISingleHandlerProvider.cs" />
     <Compile Include="Infrastructure\Impl\SQL\SqlServerLockService.cs" />
     <Compile Include="Infrastructure\ILockService.cs" />
     <Compile Include="Infrastructure\ITypeCodeProvider.cs" />
@@ -165,13 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Dapper">
-      <HintPath>..\..\packages\Dapper.1.38\lib\net45\Dapper.dll</HintPath>
-    </Reference>
-    <Reference Include="ECommon">
-      <HintPath>..\..\packages\ecommon.1.4.3\lib\net45\ECommon.dll</HintPath>
-    </Reference>
-    <Reference Include="ECommon.Dapper">
-      <HintPath>..\..\packages\ECommon.Dapper.1.4.2\lib\net45\ECommon.Dapper.dll</HintPath>
+      <HintPath>..\..\..\forum\packages\Dapper.1.38\lib\net45\Dapper.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -181,6 +182,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="SqlServerTableGenerateSQL.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ecommon\src\ECommon\ECommon.csproj">
+      <Project>{d60f17ce-ff99-42cd-af71-97c157b17af3}</Project>
+      <Name>ECommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\ecommon\src\Extensions\ECommon.Dapper\ECommon.Dapper.csproj">
+      <Project>{01d042f4-aff1-4f16-86ea-8d0efb79c523}</Project>
+      <Name>ECommon.Dapper</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

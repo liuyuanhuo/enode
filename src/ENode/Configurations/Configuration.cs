@@ -17,6 +17,8 @@ using ENode.Infrastructure.Impl.InMemory;
 using ENode.Infrastructure.Impl.SQL;
 using ENode.Snapshoting;
 using ENode.Snapshoting.Impl;
+using ENode.Domain.CompatibleStore.Impl;
+using ENode.Domain.CompatibleStore;
 
 namespace ENode.Configurations
 {
@@ -150,6 +152,17 @@ namespace ENode.Configurations
                     }
                 }
             }
+            return this;
+        }
+
+        /// <summary>Use the CompatibleAggregateStorage as the IAggregateStorage.
+        /// </summary>
+        /// <returns></returns>
+        public ENodeConfiguration UseCompatibleAggregateStore()
+        {
+            _configuration.SetDefault<IAggregateStorage, CompatibleAggregateStorage>();
+            _configuration.SetDefault<ISingleHandlerProvider<ICompatibleStoreHandler>, CompatibleStoreHandlerProvider>();
+            _assemblyInitializerServiceTypes.Add(typeof(ISingleHandlerProvider<ICompatibleStoreHandler>));
             return this;
         }
 

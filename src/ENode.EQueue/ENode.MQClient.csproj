@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8B5368E5-8518-4684-90EB-048DCBF76E9A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ENode.MQClient</RootNamespace>
+    <AssemblyName>ENode.MQClient</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\..\..\..\nugetpublish\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>D:\nugetpublish\Part.DDD.RabbitMQ.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Eventing\EventStreamMessage.cs" />
+    <Compile Include="Eventing\EventMessage.cs" />
+    <Compile Include="SendQueueMessageService.cs" />
+    <Compile Include="Messaging\ApplicationMessageConsumer.cs" />
+    <Compile Include="Messaging\ApplicationMessagePublisher.cs" />
+    <Compile Include="PublishableExceptions\PublishableExceptionMessage.cs" />
+    <Compile Include="PublishableExceptions\PublishableExceptionConsumer.cs" />
+    <Compile Include="PublishableExceptions\PublishableExceptionPublisher.cs" />
+    <Compile Include="EQueueProcessContext.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="EQueueMessageTypeCode.cs" />
+    <Compile Include="AbstractTopicProvider.cs" />
+    <Compile Include="Commanding\CommandConsumer.cs" />
+    <Compile Include="Commanding\CommandMessage.cs" />
+    <Compile Include="Eventing\DomainEventHandledMessage.cs" />
+    <Compile Include="Commanding\CommandExecutedMessage.cs" />
+    <Compile Include="Commanding\CommandResultProcessor.cs" />
+    <Compile Include="Commanding\CommandExecutedMessageSender.cs" />
+    <Compile Include="Eventing\DomainEventConsumer.cs" />
+    <Compile Include="Eventing\EventPublisher.cs" />
+    <Compile Include="Eventing\DomainEventHandledMessageSender.cs" />
+    <Compile Include="Commanding\CommandService.cs" />
+    <Compile Include="ITopicProvider.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ecommon\src\ECommon\ECommon.csproj">
+      <Project>{d60f17ce-ff99-42cd-af71-97c157b17af3}</Project>
+      <Name>ECommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ENode\ENode.csproj">
+      <Project>{f884f01a-ed67-4f21-8576-fd2588491b24}</Project>
+      <Name>ENode</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Part.MQClient\Part.MQClient.csproj">
+      <Project>{7b864415-e578-4b8e-8290-6a8c38e50c3b}</Project>
+      <Name>Part.MQClient</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

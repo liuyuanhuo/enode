@@ -25,5 +25,9 @@ namespace ENode.Domain
         /// </summary>
         /// <param name="eventStreams"></param>
         void ReplayEvents(IEnumerable<DomainEventStream> eventStreams);
+        /// <summary>Restore from the given domain event stream.
+        /// </summary>
+        /// <param name="eventStream"></param>
+        void RestoreFromEvents(DomainEventStream eventStream);
     }
 }

@@ -148,5 +148,18 @@ namespace ENode.Domain
                 _version = eventStream.Version;
             }
         }
+
+        void IAggregateRoot.RestoreFromEvents(DomainEventStream eventStream)
+        {
+            if (eventStream == null) return;
+
+            //VerifyEvent(domainEventStream);//Don't VerifyEvent when CompatibleAggregateInitStyle.RepositoryOnly or CompatibleAggregateInitStyle.RepositoryThenEventSourcing
+
+            foreach (var domainEvent in eventStream.Events)
+            {
+                HandleEvent(domainEvent);
+            }
+            _version = eventStream.Version;
+        }
     }
 }
