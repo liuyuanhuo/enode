@@ -22,6 +22,10 @@ namespace ENode.Eventing
             Timestamp = timestamp;
             Events = events;
             Items = items ?? new Dictionary<string, string>();
+            foreach (var evnt in Events)
+            {
+                evnt.SetAggregateRootTypeCode(aggregateRootTypeCode);
+            }
         }
 
         public string CommandId { get; private set; }
