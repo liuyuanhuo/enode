@@ -101,7 +101,8 @@ namespace ENode.Infrastructure.Impl
                 {
                     MessageId = message.Id,
                     HandlerTypeCode = handlerTypeCode,
-                    MessageTypeCode = messageTypeCode
+                    MessageTypeCode = messageTypeCode,
+                    FinishedTime = DateTime.Now
                 };
                 var sequenceMessage = message as ISequenceMessage;
                 if (sequenceMessage != null)

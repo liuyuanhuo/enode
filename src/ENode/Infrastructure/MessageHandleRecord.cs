@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 namespace ENode.Infrastructure
 {
     public class MessageHandleRecord
@@ -8,5 +9,6 @@ namespace ENode.Infrastructure
         public int MessageTypeCode { get; set; }
         public string AggregateRootId { get; set; }
         public int Version { get; set; }
+        public DateTime FinishedTime { get; set; }
     }
 }

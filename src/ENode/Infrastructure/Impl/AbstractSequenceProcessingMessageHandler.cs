@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using ECommon.Logging;
+using System;
 
 namespace ENode.Infrastructure.Impl
 {
@@ -70,18 +71,18 @@ namespace ENode.Infrastructure.Impl
             currentRetryTimes => DispatchProcessingMessageAsync(processingMessage, currentRetryTimes),
             result =>
             {
-                UpdatePublishedVersionAsync(processingMessage, 0);
+                UpdatePublishedVersionAsync(processingMessage, 0, DateTime.Now);
             },
             () => string.Format("sequence message [messageId:{0}, messageType:{1}, aggregateRootId:{2}, aggregateRootVersion:{3}]", processingMessage.Message.Id, processingMessage.Message.GetType().Name, processingMessage.Message.AggregateRootId, processingMessage.Message.Version),
             null,
             retryTimes,
             true);
         }
-        private void UpdatePublishedVersionAsync(X processingMessage, int retryTimes)
+        private void UpdatePublishedVersionAsync(X processingMessage, int retryTimes, DateTime finishedTime )
         {
             _ioHelper.TryAsyncActionRecursively<AsyncTaskResult>("UpdatePublishedVersionAsync",
-            () => _publishedVersionStore.UpdatePublishedVersionAsync(Name, processingMessage.Message.AggregateRootId, processingMessage.Message.Version),
-            currentRetryTimes => UpdatePublishedVersionAsync(processingMessage, currentRetryTimes),
+            () => _publishedVersionStore.UpdatePublishedVersionAsync(Name, processingMessage.Message.AggregateRootId, processingMessage.Message.Version, finishedTime),
+            currentRetryTimes => UpdatePublishedVersionAsync(processingMessage, currentRetryTimes, finishedTime),
             result =>
             {
                 processingMessage.Complete(default(Z));

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using ENode.Infrastructure;
+using System;
 
 namespace ENode.Infrastructure.Impl.InMemory
 {
@@ -9,7 +10,7 @@ namespace ENode.Infrastructure.Impl.InMemory
         private readonly Task<AsyncTaskResult> _successTask = Task.FromResult(AsyncTaskResult.Success);
         private readonly ConcurrentDictionary<string, int> _versionDict = new ConcurrentDictionary<string, int>();
 
-        public Task<AsyncTaskResult> UpdatePublishedVersionAsync(string processorName, string aggregateRootId, int publishedVersion)
+        public Task<AsyncTaskResult> UpdatePublishedVersionAsync(string processorName, string aggregateRootId, int publishedVersion, DateTime finishedTime)
         {
             _versionDict[BuildKey(processorName, aggregateRootId)] = publishedVersion;
             return _successTask;

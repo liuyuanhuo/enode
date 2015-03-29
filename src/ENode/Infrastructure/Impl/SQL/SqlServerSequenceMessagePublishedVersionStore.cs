@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ECommon.Dapper;
 using ECommon.Utilities;
 using ENode.Configurations;
+using System;
 
 namespace ENode.Infrastructure.Impl.SQL
 {
@@ -34,7 +35,7 @@ namespace ENode.Infrastructure.Impl.SQL
 
         #endregion
 
-        public async Task<AsyncTaskResult> UpdatePublishedVersionAsync(string processorName, string aggregateRootId, int publishedVersion)
+        public async Task<AsyncTaskResult> UpdatePublishedVersionAsync(string processorName, string aggregateRootId, int publishedVersion, DateTime finishedTime)
         {
             if (publishedVersion == 1)
             {
@@ -42,7 +43,8 @@ namespace ENode.Infrastructure.Impl.SQL
                 {
                     using (var connection = GetConnection())
                     {
-                        await connection.InsertAsync(new { ProcessorName = processorName, AggregateRootId = aggregateRootId, PublishedVersion = 1 }, _tableName);
+                        await connection.InsertAsync(new { ProcessorName = processorName, AggregateRootId = aggregateRootId, PublishedVersion = 1, 
+                            FinishedTime = finishedTime }, _tableName);
                         return AsyncTaskResult.Success;
                     }
                 }
@@ -62,7 +64,8 @@ namespace ENode.Infrastructure.Impl.SQL
                     await connection.UpdateAsync(
                     new
                     {
-                        PublishedVersion = publishedVersion
+                        PublishedVersion = publishedVersion,
+                        FinishedTime = finishedTime
                     },
                     new
                     {

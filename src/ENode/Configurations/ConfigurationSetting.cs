@@ -47,11 +47,11 @@ namespace ENode.Configurations
 
             SqlServerBulkCopyBatchSize = 1000;
             SqlServerBulkCopyTimeout = 60;
-            SqlServerLockServiceSetting = new DbTableSetting(this) { TableName = "Lock" };
-            SqlServerCommandStoreSetting = new DbTableSetting(this) { TableName = "Command", PrimaryKeyName = "PK_Command" };
-            SqlServerEventStoreSetting = new DbTableSetting(this) { TableName = "EventStream", PrimaryKeyName = "PK_EventStream" };
-            SqlServerAggregatePublishVersionStoreSetting = new DbTableSetting(this) { TableName = "SequenceMessagePublishedVersion", PrimaryKeyName = "PK_SequenceMessagePublishedVersion" };
-            SqlServerMessageHandleRecordStoreSetting = new DbTableSetting(this) { TableName = "MessageHandleRecord", PrimaryKeyName = "PK_MessageHandleRecord" };
+            SqlServerLockServiceSetting = new DbTableSetting(this) { TableName = "Part_Lock" };
+            SqlServerCommandStoreSetting = new DbTableSetting(this) { TableName = "Part_Command", PrimaryKeyName = "PK_Command" };
+            SqlServerEventStoreSetting = new DbTableSetting(this) { TableName = "Part_EventStream", PrimaryKeyName = "PK_EventStream" };
+            SqlServerAggregatePublishVersionStoreSetting = new DbTableSetting(this) { TableName = "Part_SequenceMessagePublishedVersion", PrimaryKeyName = "PK_SequenceMessagePublishedVersion" };
+            SqlServerMessageHandleRecordStoreSetting = new DbTableSetting(this) { TableName = "Part_MessageHandleRecord", PrimaryKeyName = "PK_MessageHandleRecord" };
         }
     }
 }

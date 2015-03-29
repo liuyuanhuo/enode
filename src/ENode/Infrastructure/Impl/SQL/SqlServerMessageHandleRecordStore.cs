@@ -45,7 +45,8 @@ namespace ENode.Infrastructure.Impl.SQL
                         MessageId = record.MessageId,
                         MessageTypeCode = record.MessageTypeCode,
                         AggregateRootId = record.AggregateRootId,
-                        Version = record.Version
+                        Version = record.Version,
+                        FinishedTime = record.FinishedTime
                     }, _tableName);
                     return AsyncTaskResult.Success;
                 }
