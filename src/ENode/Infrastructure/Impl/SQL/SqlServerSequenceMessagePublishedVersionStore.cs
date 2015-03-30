@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using ECommon.Dapper;
 using ECommon.Utilities;
 using ENode.Configurations;
-using System;
 
 namespace ENode.Infrastructure.Impl.SQL
 {
