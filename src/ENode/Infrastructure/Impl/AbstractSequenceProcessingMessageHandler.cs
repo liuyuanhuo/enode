@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using ECommon.Logging;
+using ECommon.IO;
 using System;
 
 namespace ENode.Infrastructure.Impl

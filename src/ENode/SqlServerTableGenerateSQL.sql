@@ -1,6 +1,6 @@
 CREATE TABLE [dbo].[Part_Command] (
     [Sequence]                BIGINT IDENTITY (1, 1) NOT NULL,
-    [CommandId]               NVARCHAR (128)         NOT NULL,
+    [CommandId]               NVARCHAR (36)          NOT NULL,
     [CommandTypeCode]         INT                    NOT NULL,
     [Timestamp]               DATETIME               NOT NULL,
     [Payload]                 NVARCHAR (MAX)         NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE [dbo].[Part_EventStream] (
     [AggregateRootTypeCode]   INT                    NOT NULL,
     [AggregateRootId]         NVARCHAR (128)          NOT NULL,
     [Version]                 INT                    NOT NULL,
-    [CommandId]               NVARCHAR (128)         NOT NULL,
+    [CommandId]               NVARCHAR (36)          NOT NULL,
     [Timestamp]               DATETIME               NOT NULL,
     [Events]                  NVARCHAR (MAX)         NOT NULL,
     CONSTRAINT [PK_EventStream] PRIMARY KEY CLUSTERED ([AggregateRootId] ASC, [Version] ASC)

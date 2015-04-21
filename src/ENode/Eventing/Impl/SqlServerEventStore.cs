@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Dapper;
 using ECommon.Components;
 using ECommon.Dapper;
+using ECommon.IO;
+using ECommon.Logging;
 using ECommon.Serializing;
 using ECommon.Utilities;
 using ENode.Configurations;
@@ -27,6 +29,7 @@ namespace ENode.Eventing.Impl
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IEventSerializer _eventSerializer;
         private readonly IOHelper _ioHelper;
+        private readonly ILogger _logger;
 
         #endregion
 
@@ -51,6 +54,7 @@ namespace ENode.Eventing.Impl
             _jsonSerializer = ObjectContainer.Resolve<IJsonSerializer>();
             _eventSerializer = ObjectContainer.Resolve<IEventSerializer>();
             _ioHelper = ObjectContainer.Resolve<IOHelper>();
+            _logger = ObjectContainer.Resolve<ILoggerFactory>().Create(GetType().FullName);
         }
 
         #endregion
@@ -235,9 +239,15 @@ namespace ENode.Eventing.Impl
                         }
                     }
                 }
+                catch (SqlException ex)
+                {
+                    _logger.Error("Batch append event has sql exception.", ex);
+                    return new AsyncTaskResult(AsyncTaskStatus.IOException, ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    return new AsyncTaskResult(AsyncTaskStatus.IOException, ex.Message);
+                    _logger.Error("Batch append event has unknown exception.", ex);
+                    return new AsyncTaskResult(AsyncTaskStatus.Failed, ex.Message);
                 }
             }, "BatchAppendEventsAsync");
         }
@@ -261,11 +271,13 @@ namespace ENode.Eventing.Impl
                     {
                         return new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Success, EventAppendResult.DuplicateEvent);
                     }
+                    _logger.Error(string.Format("Append event has sql exception, eventStream: {0}", eventStream), ex);
                     return new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.IOException, ex.Message, EventAppendResult.Failed);
                 }
                 catch (Exception ex)
                 {
-                    return new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.IOException, ex.Message, EventAppendResult.Failed);
+                    _logger.Error(string.Format("Append event has unknown exception, eventStream: {0}", eventStream), ex);
+                    return new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Failed, ex.Message, EventAppendResult.Failed);
                 }
             }, "AppendEventsAsync");
         }
@@ -283,9 +295,15 @@ namespace ENode.Eventing.Impl
                         return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.Success, stream);
                     }
                 }
+                catch (SqlException ex)
+                {
+                    _logger.Error(string.Format("Find event by version has sql exception, aggregateRootId: {0}, version: {1}", aggregateRootId, version), ex);
+                    return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.IOException, ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.IOException, ex.Message);
+                    _logger.Error(string.Format("Find event by version has unknown exception, aggregateRootId: {0}, version: {1}", aggregateRootId, version), ex);
+                    return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.Failed, ex.Message);
                 }
             }, "FindEventByVersionAsync");
         }
@@ -303,9 +321,15 @@ namespace ENode.Eventing.Impl
                         return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.Success, stream);
                     }
                 }
+                catch (SqlException ex)
+                {
+                    _logger.Error(string.Format("Find event by commandId has sql exception, aggregateRootId: {0}, commandId: {1}", aggregateRootId, commandId), ex);
+                    return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.IOException, ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.IOException, ex.Message);
+                    _logger.Error(string.Format("Find event by commandId has unknown exception, aggregateRootId: {0}, commandId: {1}", aggregateRootId, commandId), ex);
+                    return new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.Failed, ex.Message);
                 }
             }, "FindEventByCommandIdAsync");
         }
@@ -328,9 +352,15 @@ namespace ENode.Eventing.Impl
                         return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.Success, streams);
                     }
                 }
+                catch (SqlException ex)
+                {
+                    _logger.Error(string.Format("Query aggregate events has sql exception, aggregateRootId: {0}", aggregateRootId), ex);
+                    return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.IOException, ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.IOException, ex.Message);
+                    _logger.Error(string.Format("Query aggregate events has unknown exception, aggregateRootId: {0}", aggregateRootId), ex);
+                    return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.Failed, ex.Message);
                 }
             }, "QueryAggregateEventsAsync");
         }
@@ -347,9 +377,15 @@ namespace ENode.Eventing.Impl
                         return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.Success, streams);
                     }
                 }
+                catch (SqlException ex)
+                {
+                    _logger.Error(string.Format("Query events by page has sql exception, pageIndex: {0}, pageSize: {1}", pageIndex, pageSize), ex);
+                    return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.IOException, ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.IOException, ex.Message);
+                    _logger.Error(string.Format("Query events by page has unknown exception, pageIndex: {0}, pageSize: {1}", pageIndex, pageSize), ex);
+                    return new AsyncTaskResult<IEnumerable<DomainEventStream>>(AsyncTaskStatus.Failed, ex.Message);
                 }
             }, "QueryByPageAsync");
         }

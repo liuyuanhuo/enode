@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ECommon.IO;
 
 namespace ENode.Infrastructure
 {

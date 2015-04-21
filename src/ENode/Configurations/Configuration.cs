@@ -77,8 +77,6 @@ namespace ENode.Configurations
         /// </summary>
         public ENodeConfiguration RegisterENodeComponents()
         {
-            _configuration.SetDefault<IOHelper, IOHelper>();
-
             _configuration.SetDefault<ITypeCodeProvider, DefaultTypeCodeProvider>();
             _configuration.SetDefault<IMessageHandlerProvider, DefaultMessageHandlerProvider>();
 

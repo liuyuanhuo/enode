@@ -2,10 +2,10 @@
 using System.Text;
 using System.Threading.Tasks;
 using ECommon.Components;
+using ECommon.IO;
 using ECommon.Serializing;
 using ENode.Infrastructure;
 using EQueue.Clients.Producers;
-using EQueue.Protocols;
 using EQueueMessage = EQueue.Protocols.Message;
 
 namespace ENode.EQueue

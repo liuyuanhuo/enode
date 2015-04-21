@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using ECommon.Components;
+using ECommon.IO;
 using ECommon.Logging;
 using ECommon.Serializing;
 using ECommon.Utilities;
@@ -15,8 +16,6 @@ namespace ENode.EQueue
 {
     public class CommandService : ICommandService
     {
-        private const string DefaultCommandExecutedMessageTopic = "CommandExecutedMessageTopic";
-        private const string DefaultDomainEventHandledMessageTopic = "DomainEventHandledMessageTopic";
         private const string DefaultCommandServiceProcuderId = "CommandService";
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
@@ -42,8 +41,6 @@ namespace ENode.EQueue
             _sendMessageService = new SendQueueMessageService();
             _logger = ObjectContainer.Resolve<ILoggerFactory>().Create(GetType().FullName);
             _ioHelper = ObjectContainer.Resolve<IOHelper>();
-            CommandExecutedMessageTopic = DefaultCommandExecutedMessageTopic;
-            DomainEventHandledMessageTopic = DefaultDomainEventHandledMessageTopic;
         }
 
         public CommandService Start()
@@ -110,14 +107,12 @@ namespace ENode.EQueue
             var commandData = _jsonSerializer.Serialize(command);
             var topic = _commandTopicProvider.GetTopic(command);
             var commandTypeCode = _commandTypeCodeProvider.GetTypeCode(command.GetType());
-            var commandExecutedMessageTopic = _commandResultProcessor != null ? _commandResultProcessor.CommandExecutedMessageTopic : CommandExecutedMessageTopic;
-            var domainEventHandledMessageTopic = _commandResultProcessor != null ? _commandResultProcessor.DomainEventHandledMessageTopic : DomainEventHandledMessageTopic;
+            var replyAddress = _commandResultProcessor != null ? _commandResultProcessor.BindingAddress.ToString() : null;
             var messageData = _jsonSerializer.Serialize(new CommandMessage
             {
                 CommandTypeCode = commandTypeCode,
                 CommandData = commandData,
-                CommandExecutedMessageTopic = commandExecutedMessageTopic,
-                DomainEventHandledMessageTopic = domainEventHandledMessageTopic
+                ReplyAddress = replyAddress
             });
             return new EQueueMessage(topic, (int)EQueueMessageTypeCode.CommandMessage, Encoding.UTF8.GetBytes(messageData));
         }

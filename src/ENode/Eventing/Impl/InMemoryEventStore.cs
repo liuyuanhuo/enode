@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ECommon.Logging;
+using ECommon.IO;
 using ENode.Infrastructure;
 
 namespace ENode.Eventing.Impl

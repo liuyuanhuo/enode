@@ -1,8 +1,10 @@
 ﻿using System.Linq;
+using System.Net;
 using System.Threading;
 using ECommon.Components;
 using ECommon.Logging;
 using ECommon.Scheduling;
+using ECommon.Utilities;
 using ENode.Commanding;
 using ENode.Configurations;
 using ENode.EQueue;
@@ -33,15 +35,16 @@ namespace NoteSample.QuickStart
 
             configuration.RegisterEQueueComponents();
 
-            _broker = new BrokerController();
+            _broker = BrokerController.Create();
 
-            _commandResultProcessor = new CommandResultProcessor();
+            _commandResultProcessor = new CommandResultProcessor(new IPEndPoint(SocketUtils.GetLocalIPV4(), 9000));
             _commandService = new CommandService(_commandResultProcessor);
             _eventPublisher = new DomainEventPublisher();
 
             configuration.SetDefault<ICommandService, CommandService>(_commandService);
             configuration.SetDefault<IMessagePublisher<DomainEventStreamMessage>, DomainEventPublisher>(_eventPublisher);
 
+            //注意，这里实例化之前，需要确保各种MessagePublisher要先注入到IOC，因为CommandConsumer, DomainEventConsumer都依赖于IMessagePublisher<T>
             _commandConsumer = new CommandConsumer();
             _eventConsumer = new DomainEventConsumer();
 
@@ -64,7 +67,6 @@ namespace NoteSample.QuickStart
         }
         public static ENodeConfiguration ShutdownEQueue(this ENodeConfiguration enodeConfiguration)
         {
-            _commandResultProcessor.Shutdown();
             _commandService.Shutdown();
             _eventPublisher.Shutdown();
             _commandConsumer.Shutdown();
@@ -104,12 +106,7 @@ namespace NoteSample.QuickStart
             {
                 var eventConsumerAllocatedQueues = _eventConsumer.Consumer.GetCurrentQueues();
                 var commandConsumerAllocatedQueues = _commandConsumer.Consumer.GetCurrentQueues();
-                var executedCommandMessageConsumerAllocatedQueues = _commandResultProcessor.CommandExecutedMessageConsumer.GetCurrentQueues();
-                var domainEventHandledMessageConsumerAllocatedQueues = _commandResultProcessor.DomainEventHandledMessageConsumer.GetCurrentQueues();
-                if (eventConsumerAllocatedQueues.Count() == 4
-                    && commandConsumerAllocatedQueues.Count() == 4
-                    && executedCommandMessageConsumerAllocatedQueues.Count() == 4
-                    && domainEventHandledMessageConsumerAllocatedQueues.Count() == 4)
+                if (eventConsumerAllocatedQueues.Count() == 4 && commandConsumerAllocatedQueues.Count() == 4)
                 {
                     waitHandle.Set();
                 }

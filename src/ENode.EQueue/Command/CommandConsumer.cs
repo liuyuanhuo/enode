@@ -7,7 +7,6 @@ using ECommon.Logging;
 using ECommon.Serializing;
 using ENode.Commanding;
 using ENode.Domain;
-using ENode.Eventing;
 using ENode.Infrastructure;
 using EQueue.Clients.Consumers;
 using EQueue.Protocols;
@@ -20,7 +19,7 @@ namespace ENode.EQueue
         private const string DefaultCommandConsumerId = "CommandConsumer";
         private const string DefaultCommandConsumerGroup = "CommandConsumerGroup";
         private readonly Consumer _consumer;
-        private readonly CommandExecutedMessageSender _commandExecutedMessageSender;
+        private readonly SendReplyService _sendReplyService;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ITypeCodeProvider _typeCodeProvider;
         private readonly IMessageProcessor<ProcessingCommand, ICommand, CommandResult> _processor;
@@ -32,25 +31,24 @@ namespace ENode.EQueue
         public CommandConsumer(
             string id = null,
             string groupName = null,
-            ConsumerSetting setting = null,
-            CommandExecutedMessageSender commandExecutedMessageSender = null)
+            ConsumerSetting setting = null)
         {
             _consumer = new Consumer(id ?? DefaultCommandConsumerId, groupName ?? DefaultCommandConsumerGroup, setting ?? new ConsumerSetting
             {
                 MessageHandleMode = MessageHandleMode.Sequential
             });
+            _sendReplyService = new SendReplyService();
             _jsonSerializer = ObjectContainer.Resolve<IJsonSerializer>();
             _typeCodeProvider = ObjectContainer.Resolve<ITypeCodeProvider>();
             _processor = ObjectContainer.Resolve<IMessageProcessor<ProcessingCommand, ICommand, CommandResult>>();
             _repository = ObjectContainer.Resolve<IRepository>();
             _logger = ObjectContainer.Resolve<ILoggerFactory>().Create(GetType().FullName);
-            _commandExecutedMessageSender = commandExecutedMessageSender ?? new CommandExecutedMessageSender();
         }
 
         public CommandConsumer Start()
         {
             _consumer.SetMessageHandler(this).Start();
-            _commandExecutedMessageSender.Start();
+            _sendReplyService.Start();
             return this;
         }
         public CommandConsumer Subscribe(string topic)
@@ -61,7 +59,7 @@ namespace ENode.EQueue
         public CommandConsumer Shutdown()
         {
             _consumer.Shutdown();
-            _commandExecutedMessageSender.Shutdown();
+            _sendReplyService.Shutdown();
             return this;
         }
 
@@ -71,8 +69,8 @@ namespace ENode.EQueue
             var commandMessage = _jsonSerializer.Deserialize<CommandMessage>(Encoding.UTF8.GetString(queueMessage.Body));
             var commandType = _typeCodeProvider.GetType(commandMessage.CommandTypeCode);
             var command = _jsonSerializer.Deserialize(commandMessage.CommandData, commandType) as ICommand;
-            var commandExecuteContext = new CommandExecuteContext(_repository, queueMessage, context, commandMessage, _commandExecutedMessageSender);
-            commandItems["DomainEventHandledMessageTopic"] = commandMessage.DomainEventHandledMessageTopic;
+            var commandExecuteContext = new CommandExecuteContext(_repository, queueMessage, context, commandMessage, _sendReplyService);
+            commandItems["CommandReplyAddress"] = commandMessage.ReplyAddress;
             _processor.Process(new ProcessingCommand(command, commandExecuteContext, commandItems));
         }
 
@@ -80,16 +78,16 @@ namespace ENode.EQueue
         {
             private readonly ConcurrentDictionary<string, IAggregateRoot> _changedAggregateRootDict;
             private readonly IRepository _repository;
-            private readonly CommandExecutedMessageSender _commandExecutedMessageSender;
+            private readonly SendReplyService _sendReplyService;
             private readonly QueueMessage _queueMessage;
             private readonly IMessageContext _messageContext;
             private readonly CommandMessage _commandMessage;
 
-            public CommandExecuteContext(IRepository repository, QueueMessage queueMessage, IMessageContext messageContext, CommandMessage commandMessage, CommandExecutedMessageSender commandExecutedMessageSender)
+            public CommandExecuteContext(IRepository repository, QueueMessage queueMessage, IMessageContext messageContext, CommandMessage commandMessage, SendReplyService sendReplyService)
             {
                 _changedAggregateRootDict = new ConcurrentDictionary<string, IAggregateRoot>();
                 _repository = repository;
-                _commandExecutedMessageSender = commandExecutedMessageSender;
+                _sendReplyService = sendReplyService;
                 _queueMessage = queueMessage;
                 _commandMessage = commandMessage;
                 _messageContext = messageContext;
@@ -99,19 +97,21 @@ namespace ENode.EQueue
             {
                 _messageContext.OnMessageHandled(_queueMessage);
 
-                if (string.IsNullOrEmpty(_commandMessage.CommandExecutedMessageTopic))
+                if (string.IsNullOrEmpty(_commandMessage.ReplyAddress))
                 {
                     return;
                 }
 
-                _commandExecutedMessageSender.SendAsync(new CommandExecutedMessage
+                var message = new CommandExecutedMessage
                 {
                     CommandId = commandResult.CommandId,
                     AggregateRootId = commandResult.AggregateRootId,
                     CommandStatus = commandResult.Status,
                     ExceptionTypeName = commandResult.ExceptionTypeName,
                     ErrorMessage = commandResult.ErrorMessage,
-                }, _commandMessage.CommandExecutedMessageTopic);
+                };
+
+                _sendReplyService.SendReplyAsync((int)CommandReplyType.CommandExecuted, message, _commandMessage.ReplyAddress);
             }
             public void Add(IAggregateRoot aggregateRoot)
             {
