@@ -1,23 +1,32 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using ECommon.Components;
 using ECommon.Extensions;
-using ECommon.IO;
 using ECommon.Logging;
-using ECommon.Remoting;
 using ECommon.Scheduling;
 using ECommon.Serializing;
 using ENode.Commanding;
+using ENode.Infrastructure;
+using EQueue.Clients.Consumers;
+using EQueue.Protocols;
+using IQueueMessageHandler = EQueue.Clients.Consumers.IMessageHandler;
+using ECommon.IO;
 
 namespace ENode.EQueue.Commanding
 {
-    public class CommandResultProcessor : IRequestHandler
+    public class CommandResultProcessor
     {
-        private readonly byte[] ByteArray = new byte[0];
-        private readonly SocketRemotingServer _remotingServer;
+        private const string DefaultCommandExecutedMessageConsumerId = "CommandExecutedMessageConsumer";
+        private const string DefaultCommandExecutedMessageConsumerGroup = "CommandExecutedMessageConsumerGroup";
+        private const string DefaultDomainEventHandledMessageConsumerId = "DomainEventHandledMessageConsumer";
+        private const string DefaultDomainEventHandledMessageConsumerGroup = "DomainEventHandledMessageConsumerGroup";
+        private const string DefaultCommandExecutedMessageTopic = "CommandExecutedMessageTopic";
+        private const string DefaultDomainEventHandledMessageTopic = "DomainEventHandledMessageTopic";
+
+        private readonly Consumer _commandExecutedMessageConsumer;
+        private readonly Consumer _domainEventHandledMessageConsumer;
         private readonly ConcurrentDictionary<string, CommandTaskCompletionSource> _commandTaskDict;
         private readonly BlockingCollection<CommandExecutedMessage> _commandExecutedMessageLocalQueue;
         private readonly BlockingCollection<DomainEventHandledMessage> _domainEventHandledMessageLocalQueue;
@@ -27,15 +36,15 @@ namespace ENode.EQueue.Commanding
         private readonly ILogger _logger;
         private bool _started;
 
-        public IPEndPoint BindingAddress { get; private set; }
+        public string CommandExecutedMessageTopic { get; private set; }
+        public string DomainEventHandledMessageTopic { get; private set; }
+        public Consumer CommandExecutedMessageConsumer { get { return _commandExecutedMessageConsumer; } }
+        public Consumer DomainEventHandledMessageConsumer { get { return _domainEventHandledMessageConsumer; } }
 
-        public CommandResultProcessor(IPEndPoint bindingAddress = null)
+        public CommandResultProcessor(Consumer commandExecutedMessageConsumer = null, Consumer domainEventHandledMessageConsumer = null)
         {
-            if (bindingAddress == null)
-            {
-                bindingAddress = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9000);
-            }
-            _remotingServer = new SocketRemotingServer("CommandResultProcessor.RemotingServer", bindingAddress);
+            _commandExecutedMessageConsumer = commandExecutedMessageConsumer ?? new Consumer(DefaultCommandExecutedMessageConsumerId, DefaultCommandExecutedMessageConsumerGroup);
+            _domainEventHandledMessageConsumer = domainEventHandledMessageConsumer ?? new Consumer(DefaultDomainEventHandledMessageConsumerId, DefaultDomainEventHandledMessageConsumerGroup);
             _commandTaskDict = new ConcurrentDictionary<string, CommandTaskCompletionSource>();
             _commandExecutedMessageLocalQueue = new BlockingCollection<CommandExecutedMessage>(new ConcurrentQueue<CommandExecutedMessage>());
             _domainEventHandledMessageLocalQueue = new BlockingCollection<DomainEventHandledMessage>(new ConcurrentQueue<DomainEventHandledMessage>());
@@ -43,7 +52,19 @@ namespace ENode.EQueue.Commanding
             _domainEventHandledMessageWorker = new Worker("ProcessDomainEventHandledMessage", () => ProcessDomainEventHandledMessage(_domainEventHandledMessageLocalQueue.Take()));
             _jsonSerializer = ObjectContainer.Resolve<IJsonSerializer>();
             _logger = ObjectContainer.Resolve<ILoggerFactory>().Create(GetType().FullName);
-            BindingAddress = bindingAddress;
+            CommandExecutedMessageTopic = DefaultCommandExecutedMessageTopic;
+            DomainEventHandledMessageTopic = DefaultDomainEventHandledMessageTopic;
+        }
+
+        public CommandResultProcessor SetExecutedCommandMessageTopic(string topic)
+        {
+            CommandExecutedMessageTopic = topic;
+            return this;
+        }
+        public CommandResultProcessor SetDomainEventHandledMessageTopic(string topic)
+        {
+            DomainEventHandledMessageTopic = topic;
+            return this;
         }
 
         public void RegisterProcessingCommand(ICommand command, CommandReturnType commandReturnType, TaskCompletionSource<AsyncTaskResult<CommandResult>> taskCompletionSource)
@@ -67,46 +88,35 @@ namespace ENode.EQueue.Commanding
         {
             if (_started) return this;
 
-            _remotingServer.Start();
+            if (string.IsNullOrEmpty(CommandExecutedMessageTopic))
+            {
+                throw new Exception("Command result processor cannot start as the command executed message topic is not set.");
+            }
+            if (string.IsNullOrEmpty(DomainEventHandledMessageTopic))
+            {
+                throw new Exception("Command result processor cannot start as the domain event handled message topic is not set.");
+            }
+
+            _commandExecutedMessageConsumer.Subscribe(CommandExecutedMessageTopic);
+            _domainEventHandledMessageConsumer.Subscribe(DomainEventHandledMessageTopic);
+
+            _commandExecutedMessageConsumer.SetMessageHandler(new CommandExecutedMessageHandler(this)).Start();
+            _domainEventHandledMessageConsumer.SetMessageHandler(new DomainEventHandledMessageHandler(this)).Start();
+
             _commandExecutedMessageWorker.Start();
             _domainEventHandledMessageWorker.Start();
 
-            _remotingServer.RegisterRequestHandler((int)CommandReplyType.CommandExecuted, this);
-            _remotingServer.RegisterRequestHandler((int)CommandReplyType.DomainEventHandled, this);
-
             _started = true;
-
-            _logger.InfoFormat("Command result processor started, bindingAddress: {0}", BindingAddress);
 
             return this;
         }
         public CommandResultProcessor Shutdown()
         {
-            _remotingServer.Shutdown();
+            _commandExecutedMessageConsumer.Shutdown();
+            _domainEventHandledMessageConsumer.Shutdown();
             _commandExecutedMessageWorker.Stop();
             _domainEventHandledMessageWorker.Stop();
             return this;
-        }
-
-        RemotingResponse IRequestHandler.HandleRequest(IRequestHandlerContext context, RemotingRequest remotingRequest)
-        {
-            if (remotingRequest.Code == (int)CommandReplyType.CommandExecuted)
-            {
-                var json = Encoding.UTF8.GetString(remotingRequest.Body);
-                var message = _jsonSerializer.Deserialize<CommandExecutedMessage>(json);
-                _commandExecutedMessageLocalQueue.Add(message);
-            }
-            else if (remotingRequest.Code == (int)CommandReplyType.DomainEventHandled)
-            {
-                var json = Encoding.UTF8.GetString(remotingRequest.Body);
-                var message = _jsonSerializer.Deserialize<DomainEventHandledMessage>(json);
-                _domainEventHandledMessageLocalQueue.Add(message);
-            }
-            else
-            {
-                _logger.ErrorFormat("Invalid remoting request code: {0}", remotingRequest.Code);
-            }
-            return new RemotingResponse(Constants.SuccessResponseCode, remotingRequest.Sequence, ByteArray);
         }
 
         private void ProcessExecutedCommandMessage(CommandExecutedMessage message)
@@ -159,6 +169,36 @@ namespace ENode.EQueue.Commanding
         {
             public TaskCompletionSource<AsyncTaskResult<CommandResult>> TaskCompletionSource { get; set; }
             public CommandReturnType CommandReturnType { get; set; }
+        }
+        class CommandExecutedMessageHandler : IQueueMessageHandler
+        {
+            private CommandResultProcessor _processor;
+
+            public CommandExecutedMessageHandler(CommandResultProcessor processor)
+            {
+                _processor = processor;
+            }
+
+            void IQueueMessageHandler.Handle(QueueMessage message, IMessageContext context)
+            {
+                _processor._commandExecutedMessageLocalQueue.Add(_processor._jsonSerializer.Deserialize(Encoding.UTF8.GetString(message.Body), typeof(CommandExecutedMessage)) as CommandExecutedMessage);
+                context.OnMessageHandled(message);
+            }
+        }
+        class DomainEventHandledMessageHandler : IQueueMessageHandler
+        {
+            private CommandResultProcessor _processor;
+
+            public DomainEventHandledMessageHandler(CommandResultProcessor processor)
+            {
+                _processor = processor;
+            }
+
+            void IQueueMessageHandler.Handle(QueueMessage message, IMessageContext context)
+            {
+                _processor._domainEventHandledMessageLocalQueue.Add(_processor._jsonSerializer.Deserialize(Encoding.UTF8.GetString(message.Body), typeof(DomainEventHandledMessage)) as DomainEventHandledMessage);
+                context.OnMessageHandled(message);
+            }
         }
     }
 }

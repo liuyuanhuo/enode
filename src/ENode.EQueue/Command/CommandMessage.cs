@@ -8,5 +8,7 @@ namespace ENode.EQueue
         public int CommandTypeCode { get; set; }
         public string CommandData { get; set; }
         public string ReplyAddress { get; set; }
+        public string CommandExecutedMessageTopic { get; set; }
+        public string DomainEventHandledMessageTopic { get; set; }
     }
 }

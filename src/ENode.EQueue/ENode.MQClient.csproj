@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandReplyType.cs" />
     <Compile Include="DomainEvent\EventStreamMessage.cs" />
     <Compile Include="SendQueueMessageService.cs" />
     <Compile Include="ApplicationMessage\ApplicationMessageConsumer.cs" />
@@ -63,13 +64,18 @@
     <Compile Include="DomainEvent\DomainEventHandledMessage.cs" />
     <Compile Include="Command\CommandExecutedMessage.cs" />
     <Compile Include="Command\CommandResultProcessor.cs" />
-    <Compile Include="Command\CommandExecutedMessageSender.cs" />
     <Compile Include="DomainEvent\DomainEventConsumer.cs" />
     <Compile Include="DomainEvent\DomainEventPublisher.cs" />
-    <Compile Include="DomainEvent\DomainEventHandledMessageSender.cs" />
     <Compile Include="Command\CommandService.cs" />
     <Compile Include="ITopicProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SendReplyService.cs" />
+    <Compile Include="Command\MQ\CommandConsumer.cs" />
+    <Compile Include="Command\MQ\CommandExecutedMessageSender.cs" />
+    <Compile Include="Command\MQ\CommandResultProcessor.cs" />
+    <Compile Include="Command\MQ\CommandService.cs" />
+    <Compile Include="DomainEvent\MQ\DomainEventHandledMessageSender.cs" />
+    <Compile Include="DomainEvent\MQ\DomainEventConsumer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ecommon\src\ECommon\ECommon.csproj">
