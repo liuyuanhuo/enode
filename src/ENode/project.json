@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0-*",
+  "description": "",
+  "authors": [ "" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "dependencies": {
+    "ECommon": "1.0.0-*",
+    "ECommon.Autofac": "1.0.0-*",
+    "ECommon.Dapper": "1.0.0-*",
+    "ECommon.JsonNet": "1.0.0-*",
+    "ECommon.Log4Net": "1.0.0-*",
+    "System.Xml.XmlSerializer": "4.0.10-beta-22816"
+  },
+
+  "frameworks": {
+    "dnx451": { } 
+  }
+} 
