@@ -72,7 +72,7 @@
     <Compile Include="SendReplyService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ecommon\src\ECommon\ECommon.csproj">
+    <ProjectReference Include="..\..\..\..\PB\ecommon\src\ECommon\ECommon.csproj">
       <Project>{d60f17ce-ff99-42cd-af71-97c157b17af3}</Project>
       <Name>ECommon</Name>
     </ProjectReference>
@@ -80,9 +80,9 @@
       <Project>{f884f01a-ed67-4f21-8576-fd2588491b24}</Project>
       <Name>ENode</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Part.MQClient\Part.MQClient.csproj">
+    <ProjectReference Include="..\PF.MQClient\PF.MQClient.csproj">
       <Project>{7b864415-e578-4b8e-8290-6a8c38e50c3b}</Project>
-      <Name>Part.MQClient</Name>
+      <Name>PF.MQClient</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

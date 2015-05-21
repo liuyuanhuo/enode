@@ -170,7 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Dapper">
-      <HintPath>..\..\..\forum\packages\Dapper.1.38\lib\net45\Dapper.dll</HintPath>
+      <HintPath>..\..\..\..\packages\Dapper.1.38\lib\net45\Dapper.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -182,11 +182,11 @@
     <Content Include="SqlServerTableGenerateSQL.sql" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ecommon\src\ECommon\ECommon.csproj">
+    <ProjectReference Include="..\..\..\..\PB\ecommon\src\ECommon\ECommon.csproj">
       <Project>{d60f17ce-ff99-42cd-af71-97c157b17af3}</Project>
       <Name>ECommon</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\ecommon\src\Extensions\ECommon.Dapper\ECommon.Dapper.csproj">
+    <ProjectReference Include="..\..\..\..\PB\ecommon\src\Extensions\ECommon.Dapper\ECommon.Dapper.csproj">
       <Project>{01d042f4-aff1-4f16-86ea-8d0efb79c523}</Project>
       <Name>ECommon.Dapper</Name>
     </ProjectReference>

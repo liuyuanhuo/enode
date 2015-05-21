@@ -8,7 +8,7 @@
       "ECommon.JsonNet >= 1.0.0-*",
       "ECommon.Log4Net >= 1.0.0-*",
       "ENode >= 1.0.0-*",
-      "Part.MQClient >= 1.0.0-*"
+      "PF.MQClient >= 1.0.0-*"
     ],
     "DNX,Version=v4.5.1": []
   },
@@ -205,6 +205,32 @@
         "ENode.1.0.nupkg.sha512",
         "ENode.nuspec",
         "lib/net40/ENode.dll"
+      ]
+    },
+    "ENode.EQueue/1.0.0": {
+      "serviceable": false,
+      "sha": "Vn46VaEo5NS/4fhgIaiu687k5nj7eWskpWyR+zDiKoNIfQakD+1KZal8R+HXRB8wnOw5VZsegqStG3HX9Y9R/w==",
+      "frameworks": {
+        "DNX,Version=v4.5.1": {
+          "dependencies": {
+            "enode": "2.0.0",
+            "equeue": "1.0.0"
+          },
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/net40/ENode.EQueue.dll"
+          ],
+          "compileAssemblies": [
+            "lib/net40/ENode.EQueue.dll"
+          ]
+        }
+      },
+      "files": [
+        "ENode.EQueue.1.0.0.nupkg",
+        "ENode.EQueue.1.0.0.nupkg.sha512",
+        "ENode.EQueue.nuspec",
+        "lib/net40/ENode.EQueue.dll",
+        "lib/net40/ENode.EQueue.xml"
       ]
     },
     "log4net/2.0.3": {
